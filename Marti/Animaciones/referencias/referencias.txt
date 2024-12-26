@@ -3,3 +3,8 @@ Walk: https://youtu.be/iI3SnwDZ5Dk?t=39
 jump: https://youtu.be/4HKfE1HUxeY?t=55
 
 attack long: https://youtu.be/LewXWM7HDd8?t=14
+attack long 2: https://youtu.be/Ixyg4DIYfyM?t=21
+
+attack low long: https://youtu.be/PVM_zJIeGIE
+
+die: https://youtu.be/RrTsn1Q1Z6I?t=12
