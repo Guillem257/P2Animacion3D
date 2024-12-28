@@ -64,14 +64,26 @@ public class AzriController : MonoBehaviour
         }
 
 
+        Debug.Log(animator.GetCurrentAnimatorClipInfo(0)[0].clip.name);
 
         //Ajustes movimiento
         azriT.position = new Vector3(0, azriT.position.y, azriT.position.z);
 
-        if(azriT.transform.position.y < -1)
-        {
-            azriT.position = new Vector3(azriT.position.x, -0.9f, azriT.position.z);
-        }
+
+        //if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name == "Idle")
+        //{
+        //    Debug.Log("Esta idlee");
+        //    if(azriT.position.y > 0.02 || azriT.position.y < -0.02)
+        //    {
+        //        azriT.position = new Vector3(azriT.position.x, 0, azriT.position.z);
+        //    }
+        //}
+        //else
+        //{
+        //    //Debug.Log(animator.GetCurrentAnimatorClipInfo(0)[0].clip.name);
+        //}
+
+
 
     }
 
