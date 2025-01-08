@@ -7,11 +7,11 @@ public class ScoutController : MonoBehaviour
     public Animator animator;
 
     private Transform scoutT;
+    public float velocidadMovimiento = 1;
 
     void Start()
     {
-        // Referencia al componente Animator
-        // animator = GetComponent<Animator>();
+        // Referencia al transform del modelo
         scoutT = transform.GetChild(0);
     }
 
@@ -21,40 +21,43 @@ public class ScoutController : MonoBehaviour
         animator.SetBool("IsWalkingForward", false);
         animator.SetBool("IsWalkingBackwards", false);
 
-        // Leer inputs del mando
-        float horizontal = Input.GetAxis("Horizontal"); // Joystick izquierdo (X axis)
-        float vertical = Input.GetAxis("Vertical"); // Joystick izquierdo (Y axis)
-        bool blockButton = Input.GetButton("Fire3"); // Bot�n de bloqueo (generalmente bot�n "B" o "Circle")
-        bool attackQuick = Input.GetButtonDown("Fire1"); // Bot�n de ataque r�pido (generalmente bot�n "X" o "Square")
-        bool attackSlow = Input.GetButtonDown("Fire2"); // Bot�n de ataque lento (generalmente bot�n "A" o "Triangle")
-        bool jumpButton = Input.GetButtonDown("Jump"); // Bot�n de salto (generalmente "Y" o "Triangle")
+        // Leer inputs del teclado
+        bool moveForward = Input.GetKey(KeyCode.A); // Caminar hacia adelante
+        bool moveBackward = Input.GetKey(KeyCode.D); // Caminar hacia atrás
+        bool moveUp = Input.GetKey(KeyCode.W); // Moverse a la izquierda
+        bool moveDown = Input.GetKey(KeyCode.S); // Moverse a la derecha
+        bool blockButton = Input.GetKey(KeyCode.L); // Bloquear
+        bool attackQuick = Input.GetKeyDown(KeyCode.J); // Ataque rápido
+        bool attackSlow = Input.GetKeyDown(KeyCode.K); // Ataque lento
 
-        // Transiciones
-        if (-horizontal > 0) // Caminar hacia adelante
+        // Transiciones de animación y movimiento
+        if (moveForward) // Caminar hacia adelante
         {
             animator.SetBool("IsWalkingForward", true);
+            transform.Translate(0, 0, velocidadMovimiento * Time.deltaTime);
         }
-        else if (-horizontal < 0) // Caminar hacia atr�s
+        else if (moveBackward) // Caminar hacia atrás
         {
             animator.SetBool("IsWalkingBackwards", true);
+            transform.Translate(0, 0, -velocidadMovimiento * Time.deltaTime);
         }
-        else if (vertical < -0.5f && blockButton) // Esquivar ataque alto
+        else if (blockButton && moveDown) // Esquivar ataque alto
         {
             animator.SetTrigger("DodgingHigh");
         }
-        else if (vertical > 0.5f && blockButton) // Esquivar ataque bajo (salto en el lugar)
+        else if (blockButton && moveUp) // Esquivar ataque bajo (salto en el lugar)
         {
             animator.SetTrigger("Jumping");
         }
-        else if (vertical < -0.5f && attackQuick) // Ataque bajo r�pido
+        else if (moveDown && attackQuick) // Ataque bajo rápido
         {
             animator.SetTrigger("LowQuickAttack");
         }
-        else if (vertical < -0.5f && attackSlow) // Ataque bajo lento
+        else if (moveDown && attackSlow) // Ataque bajo lento
         {
             animator.SetTrigger("LowSlowAttack");
         }
-        else if (attackQuick) // Ataque r�pido
+        else if (attackQuick) // Ataque rápido
         {
             animator.SetTrigger("QuickAttack");
         }
@@ -63,28 +66,8 @@ public class ScoutController : MonoBehaviour
             animator.SetTrigger("SlowAttack");
         }
 
-
-        Debug.Log(animator.GetCurrentAnimatorClipInfo(0)[0].clip.name);
-
-        //Ajustes movimiento
+        // Ajustes de movimiento
         scoutT.position = new Vector3(0, scoutT.position.y, scoutT.position.z);
-
-
-        //if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name == "Idle")
-        //{
-        //    Debug.Log("Esta idlee");
-        //    if(azriT.position.y > 0.02 || azriT.position.y < -0.02)
-        //    {
-        //        azriT.position = new Vector3(azriT.position.x, 0, azriT.position.z);
-        //    }
-        //}
-        //else
-        //{
-        //    //Debug.Log(animator.GetCurrentAnimatorClipInfo(0)[0].clip.name);
-        //}
-
-
-
     }
 
     public void Die()
