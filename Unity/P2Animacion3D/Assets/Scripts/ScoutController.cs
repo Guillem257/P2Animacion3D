@@ -9,10 +9,21 @@ public class ScoutController : MonoBehaviour
     private Transform scoutT;
     public float velocidadMovimiento = 1;
 
+    public static ScoutController instance;
+
+    public bool isAttacking = false;
+    public bool isBlocking = false;
+    public bool dead = false;
+
     void Start()
     {
         // Referencia al transform del modelo
         scoutT = transform.GetChild(0);
+
+        if(instance == null)
+        {
+            instance = this;
+        }
     }
 
     void Update()
@@ -68,15 +79,45 @@ public class ScoutController : MonoBehaviour
 
         // Ajustes de movimiento
         scoutT.position = new Vector3(0, scoutT.position.y, scoutT.position.z);
+
+
+        UpdateStates();
+    }
+
+    private void UpdateStates()
+    {
+        // Verificar si el personaje está atacando
+        isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack");
+
+        // Verificar si el personaje está bloqueando (dodge o jump)
+        isBlocking = animator.GetCurrentAnimatorStateInfo(0).IsTag("Dodge") ||
+                     animator.GetCurrentAnimatorStateInfo(0).IsTag("Jump");
+
+
+        if (AzriController.instance.dead)
+        {
+            Win();
+        }
+
+
     }
 
     public void Die()
     {
+        dead = true;
         animator.SetTrigger("Die");
     }
 
     public void Win()
     {
         animator.SetTrigger("Win");
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("ColisionAzri") && AzriController.instance.isAttacking)
+        {
+            Die();
+        }
     }
 }

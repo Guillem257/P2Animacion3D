@@ -9,12 +9,24 @@ public class AzriController : MonoBehaviour
 
     private Transform azriT;
 
+    public static AzriController instance;
+
     private Vector2 movementInput; // Almacena los valores de movimiento
+
+    public bool isAttacking = false;
+    public bool isBlocking = false;
+    public bool dead = false;
 
     void Start()
     {
         // Referencia al transform del modelo
         azriT = transform.GetChild(0);
+
+        if(instance == null)
+        {
+            instance = this;
+        }
+
     }
 
     void Update()
@@ -36,6 +48,29 @@ public class AzriController : MonoBehaviour
 
         // Ajustar posición de movimiento en el eje X
         azriT.position = new Vector3(0, azriT.position.y, azriT.position.z);
+
+
+        UpdateStates();
+
+    }
+
+
+    private void UpdateStates()
+    {
+        // Verificar si el personaje está atacando
+        isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsTag("Attack");
+
+        // Verificar si el personaje está bloqueando (dodge o jump)
+        isBlocking = animator.GetCurrentAnimatorStateInfo(0).IsTag("Dodge") ||
+                     animator.GetCurrentAnimatorStateInfo(0).IsTag("Jump");
+
+
+        if (ScoutController.instance.dead)
+        {
+            Win();
+        }
+
+
     }
 
     public void OnMove(InputAction.CallbackContext ctx)
@@ -47,9 +82,17 @@ public class AzriController : MonoBehaviour
         }
     }
 
+    public void OnJump(InputAction.CallbackContext ctx)
+    {
+        if (ctx.performed && !isBlocking)
+        {
+            animator.SetTrigger("Jumping");
+        }
+    }
+
     public void OnDodge(InputAction.CallbackContext ctx)
     {
-        if (ctx.performed)
+        if (ctx.performed && !isBlocking)
         {
             if (movementInput.y < -0.5f) // Esquivar ataque alto
             {
@@ -59,12 +102,16 @@ public class AzriController : MonoBehaviour
             {
                 animator.SetTrigger("Jumping");
             }
+            else
+            {
+                animator.SetTrigger("DodgingHigh");
+            }
         }
     }
 
     public void OnAttackQuick(InputAction.CallbackContext ctx)
     {
-        if (ctx.performed)
+        if (ctx.performed && !isAttacking)
         {
             if (movementInput.y < -0.5f) // Ataque bajo rápido
             {
@@ -79,7 +126,7 @@ public class AzriController : MonoBehaviour
 
     public void OnAttackSlow(InputAction.CallbackContext ctx)
     {
-        if (ctx.performed)
+        if (ctx.performed && !isAttacking)
         {
             if (movementInput.y < -0.5f) // Ataque bajo lento
             {
@@ -94,11 +141,23 @@ public class AzriController : MonoBehaviour
 
     public void Die()
     {
+        dead = true;
         animator.SetTrigger("Die");
     }
 
     public void Win()
     {
         animator.SetTrigger("Win");
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+
+        Debug.Log("alhooo");
+
+        if(other.CompareTag("ColisionScout") && ScoutController.instance.isAttacking)
+        {
+            Die();
+        }
     }
 }
