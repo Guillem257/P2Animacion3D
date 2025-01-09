@@ -15,10 +15,17 @@ public class ScoutController : MonoBehaviour
     public bool isBlocking = false;
     public bool dead = false;
 
+
+    public AudioSource audioSource;
+
+    public AudioClip jump, kick, punch, victory, walk;
+    private float contadorWalk = 0;
+    private bool winSound = false;
+
     void Start()
     {
         // Referencia al transform del modelo
-        scoutT = transform.GetChild(0);
+        scoutT = transform;
 
         if(instance == null)
         {
@@ -33,24 +40,35 @@ public class ScoutController : MonoBehaviour
         animator.SetBool("IsWalkingBackwards", false);
 
         // Leer inputs del teclado
-        bool moveForward = Input.GetKey(KeyCode.A); // Caminar hacia adelante
-        bool moveBackward = Input.GetKey(KeyCode.D); // Caminar hacia atrás
-        bool moveUp = Input.GetKey(KeyCode.W); // Moverse a la izquierda
-        bool moveDown = Input.GetKey(KeyCode.S); // Moverse a la derecha
+        bool moveForward = Input.GetKey(KeyCode.A); 
+        bool moveBackward = Input.GetKey(KeyCode.D); 
+        bool moveUp = Input.GetKey(KeyCode.W);
+        bool moveDown = Input.GetKey(KeyCode.S); 
         bool blockButton = Input.GetKey(KeyCode.L); // Bloquear
         bool attackQuick = Input.GetKeyDown(KeyCode.J); // Ataque rápido
         bool attackSlow = Input.GetKeyDown(KeyCode.K); // Ataque lento
 
+        contadorWalk += Time.deltaTime;
         // Transiciones de animación y movimiento
-        if (moveForward) // Caminar hacia adelante
+        if (moveBackward) // Caminar hacia adelante
         {
             animator.SetBool("IsWalkingForward", true);
             transform.Translate(0, 0, velocidadMovimiento * Time.deltaTime);
+            if (contadorWalk > 0.5f)
+            {
+                audioSource.PlayOneShot(walk);
+                contadorWalk = 0;
+            }
         }
-        else if (moveBackward) // Caminar hacia atrás
+        else if (moveForward) // Caminar hacia atrás
         {
             animator.SetBool("IsWalkingBackwards", true);
             transform.Translate(0, 0, -velocidadMovimiento * Time.deltaTime);
+            if (contadorWalk > 0.5f)
+            {
+                audioSource.PlayOneShot(walk);
+                contadorWalk = 0;
+            }
         }
         else if (blockButton && moveDown) // Esquivar ataque alto
         {
@@ -59,6 +77,7 @@ public class ScoutController : MonoBehaviour
         else if (blockButton && moveUp) // Esquivar ataque bajo (salto en el lugar)
         {
             animator.SetTrigger("Jumping");
+            audioSource.PlayOneShot(jump);
         }
         else if (moveDown && attackQuick) // Ataque bajo rápido
         {
@@ -110,6 +129,13 @@ public class ScoutController : MonoBehaviour
 
     public void Win()
     {
+        if (!winSound)
+        {
+            audioSource.clip = victory;
+            audioSource.Play();
+            winSound = true;
+        }
+        
         animator.SetTrigger("Win");
     }
 
@@ -117,6 +143,7 @@ public class ScoutController : MonoBehaviour
     {
         if (other.CompareTag("ColisionAzri") && AzriController.instance.isAttacking)
         {
+            audioSource.PlayOneShot(kick);
             Die();
         }
     }

@@ -11,16 +11,24 @@ public class AzriController : MonoBehaviour
 
     public static AzriController instance;
 
+    public AudioSource audioSource;
+
+    public AudioClip jump, kick, punch, victory, walk;
+
     private Vector2 movementInput; // Almacena los valores de movimiento
 
     public bool isAttacking = false;
     public bool isBlocking = false;
     public bool dead = false;
 
+    private bool winSound = false;
+
+    private float contadorWalk = 0;
+
     void Start()
     {
         // Referencia al transform del modelo
-        azriT = transform.GetChild(0);
+        azriT = transform;
 
         if(instance == null)
         {
@@ -39,12 +47,24 @@ public class AzriController : MonoBehaviour
         if (movementInput.x > 0.5f) // Caminar hacia adelante
         {
             animator.SetBool("IsWalkingBackwards", true);
+            if(contadorWalk > 0.5f)
+            {
+                audioSource.PlayOneShot(walk);
+                contadorWalk = 0;
+            }
+           
         }
         else if (movementInput.x < -0.5f) // Caminar hacia atrás
         {
             animator.SetBool("IsWalkingForward", true);
-            
+            if (contadorWalk > 0.5f)
+            {
+                audioSource.PlayOneShot(walk);
+                contadorWalk = 0;
+            }
         }
+        contadorWalk += Time.deltaTime;
+       
 
         // Ajustar posición de movimiento en el eje X
         azriT.position = new Vector3(0, azriT.position.y, azriT.position.z);
@@ -79,6 +99,7 @@ public class AzriController : MonoBehaviour
         {
             // Leer y almacenar el valor de entrada
             movementInput = ctx.ReadValue<Vector2>();
+           
         }
     }
 
@@ -87,6 +108,8 @@ public class AzriController : MonoBehaviour
         if (ctx.performed && !isBlocking)
         {
             animator.SetTrigger("Jumping");
+            audioSource.clip = jump;
+            audioSource.Play();
         }
     }
 
@@ -101,6 +124,8 @@ public class AzriController : MonoBehaviour
             else if (movementInput.y > 0.5f) // Esquivar ataque bajo (salto)
             {
                 animator.SetTrigger("Jumping");
+                audioSource.clip = jump;
+                audioSource.Play();
             }
             else
             {
@@ -115,10 +140,12 @@ public class AzriController : MonoBehaviour
         {
             if (movementInput.y < -0.5f) // Ataque bajo rápido
             {
+                isAttacking = true;
                 animator.SetTrigger("LowQuickAttack");
             }
             else // Ataque rápido normal
             {
+                isAttacking = true;
                 animator.SetTrigger("QuickAttack");
             }
         }
@@ -147,6 +174,12 @@ public class AzriController : MonoBehaviour
 
     public void Win()
     {
+        if (!winSound)
+        {
+            audioSource.clip = victory;
+            audioSource.Play();
+            winSound = true;
+        }
         animator.SetTrigger("Win");
     }
 
@@ -157,6 +190,7 @@ public class AzriController : MonoBehaviour
 
         if(other.CompareTag("ColisionScout") && ScoutController.instance.isAttacking)
         {
+            audioSource.PlayOneShot(kick);
             Die();
         }
     }
